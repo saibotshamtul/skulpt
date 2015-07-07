@@ -27,6 +27,9 @@ Sk.configure = function (options) {
     Sk.debugout = options["debugout"] || Sk.debugout;
     goog.asserts.assert(typeof Sk.debugout === "function");
 
+    Sk.uncaughtException = options["uncaughtException"] || Sk.uncaughtException;
+    goog.asserts.assert(typeof Sk.uncaughtException === "function");
+
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
@@ -40,14 +43,14 @@ Sk.configure = function (options) {
     Sk.python3 = options["python3"] || Sk.python3;
     goog.asserts.assert(typeof Sk.python3 === "boolean");
 
+    Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
+    goog.asserts.assert(typeof Sk.imageProxy === "string");
+
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
 
-    Sk.throwSystemExit = options["systemexit"] || false;
-    goog.asserts.assert(typeof Sk.throwSystemExit === "boolean");
-
     Sk.retainGlobals = options["retainglobals"] || false;
-    goog.asserts.assert(typeof Sk.throwSystemExit === "boolean");
+    goog.asserts.assert(typeof Sk.retainGlobals === "boolean");
 
     Sk.debugging = options["debugging"] || false;
     goog.asserts.assert(typeof Sk.debugging === "boolean");
@@ -55,6 +58,13 @@ Sk.configure = function (options) {
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 
+    if ("execLimit" in options) {
+        Sk.execLimit = options["execLimit"];
+    }
+
+    if ("yieldLimit" in options) {
+        Sk.yieldLimit = options["yieldLimit"];
+    }
 
     if (options["syspath"]) {
         Sk.syspath = options["syspath"];
@@ -70,12 +80,30 @@ Sk.configure = function (options) {
 goog.exportSymbol("Sk.configure", Sk.configure);
 
 /*
+ * Replaceable handler for uncaught exceptions
+ */
+Sk.uncaughtException = function(err) {
+    throw err;
+};
+goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
+
+/*
  *	Replaceable message for message timeouts
  */
 Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
 goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+
+/*
+ *  Hard execution timeout, throws an error. Set to null to disable
+ */
+Sk.execLimit = Number.POSITIVE_INFINITY;
+
+/*
+ *  Soft execution timeout, returns a Suspension. Set to null to disable
+ */
+Sk.yieldLimit = Number.POSITIVE_INFINITY;
 
 /*
  * Replacable output redirection (called from print, etc).
